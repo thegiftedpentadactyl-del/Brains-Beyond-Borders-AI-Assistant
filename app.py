@@ -72,12 +72,12 @@ def send_welcome(message):
     
     welcome_text = (
         "Welcome aboard.\n\n"
-        f"As you step into your future, reflect upon this wisdom: *\"{selected_quote}\"*\n\n"
+        f"As you step into your future, reflect upon this wisdom: \"{selected_quote}\"\n\n"
         "We are honored to welcome you to the Brains Beyond Borders community. "
         "To curate an elite, highly personalized experience tailored precisely to your ambitions, let us walk through 10 brief intake questions.\n\n"
         "Question 1/10: What is your full name?"
     )
-    bot.send_message(chat_id, welcome_text, parse_mode="Markdown")
+    bot.send_message(chat_id, welcome_text)
 
 @bot.message_handler(func=lambda message: True)
 def handle_all_messages(message):
@@ -156,7 +156,6 @@ def handle_all_messages(message):
 
     # Normal Chat Mode (Post-Onboarding with Processing Heads-Up)
     try:
-        # Give user an immediate heads-up notice regarding server wake-up / processing time
         bot.send_message(chat_id, "Your message is under processing. Please allow 30 to 50 seconds for our secure cloud server to compile your comprehensive guidance...")
         bot.send_chat_action(chat_id, 'typing')
         
@@ -204,4 +203,4 @@ def handle_all_messages(message):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-  
+    

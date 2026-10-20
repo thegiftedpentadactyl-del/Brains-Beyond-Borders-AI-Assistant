@@ -1,16 +1,20 @@
 import os
 import random
-import requests
 from flask import Flask, request as flask_request
 import telebot
+from google import genai
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # --- SECURE CREDENTIALS ---
 TELEGRAM_BOT_TOKEN = "8845212664:AAHq9pMp4xA5rlrIH669kSf5_88frWe8o0U"
-GEMINI_API_KEY = "AQ.Ab8RN6LYlif0NCXpoS-c_iWxMtAWW1NTi88aLI60GhTfXvGkCA"
+GEMINI_API_KEY = "AQ.Ab8RN6Ln8amKuFVL8FNepn0simY9_Hpx6LCpibWKVdN6AhQRHA"
 
-# Initialize Flask & Bot
+# Set environment variable so the GenAI client recognizes the OAuth token format
+os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
+
+# Initialize Flask, GenAI Client & Bot
 app = Flask(__name__)
+client = genai.Client()
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, threaded=False)
 
 # In-memory storage for user profiles and onboarding states
@@ -185,23 +189,12 @@ def handle_all_messages(message):
         
         full_prompt = f"{system_prompt}\n\nUser Request:\n{text}"
         
-        # Pass token as URL query parameter (?key=...) which resolves organization auth requirements
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-        headers = {
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "contents": [{"parts": [{"text": full_prompt}]}]
-        }
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=full_prompt
+        )
         
-        res = requests.post(url, headers=headers, json=payload)
-        res_data = res.json()
-        
-        if res.status_code == 200:
-            response_text = res_data['candidates'][0]['content']['parts'][0]['text']
-        else:
-            response_text = f"API Error: {res_data.get('error', {}).get('message', 'Unknown error')}"
-
+        response_text = response.text
         if len(response_text) > 4000:
             for i in range(0, len(response_text), 4000):
                 bot.send_message(chat_id, response_text[i:i+4000])

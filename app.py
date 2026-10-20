@@ -185,10 +185,9 @@ def handle_all_messages(message):
         
         full_prompt = f"{system_prompt}\n\nUser Request:\n{text}"
         
-        # Direct HTTP POST call matching the new AQ auth format
-        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+        # Pass token as URL query parameter (?key=...) which resolves organization auth requirements
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         headers = {
-            "Authorization": f"Bearer {GEMINI_API_KEY}",
             "Content-Type": "application/json"
         }
         payload = {
@@ -215,4 +214,4 @@ def handle_all_messages(message):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-    
+        

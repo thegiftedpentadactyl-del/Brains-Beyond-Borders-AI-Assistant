@@ -1,17 +1,16 @@
 import os
 import random
-from flask import Flask, request
+import requests
+from flask import Flask, request as flask_request
 import telebot
-from google import genai
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # --- SECURE CREDENTIALS ---
 TELEGRAM_BOT_TOKEN = "8845212664:AAHq9pMp4xA5rlrIH669kSf5_88frWe8o0U"
-GEMINI_API_KEY = "AQ.Ab8RN6JuTrbU8B8lPbw8UrSWLV5YECz3N4utl4jFIGi3cK2e_g"
+GEMINI_API_KEY = "AQ.Ab8RN6LYlif0NCXpoS-c_iWxMtAWW1NTi88aLI60GhTfXvGkCA"
 
-# Initialize Flask, GenAI Client & Bot
+# Initialize Flask & Bot
 app = Flask(__name__)
-client = genai.Client(api_key=GEMINI_API_KEY)
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, threaded=False)
 
 # In-memory storage for user profiles and onboarding states
@@ -52,8 +51,8 @@ def get_community_markup():
 
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
 def webhook():
-    if request.headers.get('content-type') == 'application/json':
-        json_data = request.get_json(force=True)
+    if flask_request.headers.get('content-type') == 'application/json':
+        json_data = flask_request.get_json(force=True)
         update = telebot.types.Update.de_json(json_data)
         bot.process_new_updates([update])
         return "OK", 200
@@ -186,12 +185,24 @@ def handle_all_messages(message):
         
         full_prompt = f"{system_prompt}\n\nUser Request:\n{text}"
         
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=full_prompt
-        )
+        # Direct HTTP POST call matching the new AQ auth format
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+        headers = {
+            "Authorization": f"Bearer {GEMINI_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "contents": [{"parts": [{"text": full_prompt}]}]
+        }
         
-        response_text = response.text
+        res = requests.post(url, headers=headers, json=payload)
+        res_data = res.json()
+        
+        if res.status_code == 200:
+            response_text = res_data['candidates'][0]['content']['parts'][0]['text']
+        else:
+            response_text = f"API Error: {res_data.get('error', {}).get('message', 'Unknown error')}"
+
         if len(response_text) > 4000:
             for i in range(0, len(response_text), 4000):
                 bot.send_message(chat_id, response_text[i:i+4000])
@@ -204,4 +215,4 @@ def handle_all_messages(message):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-        
+    

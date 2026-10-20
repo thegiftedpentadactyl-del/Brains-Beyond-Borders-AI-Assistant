@@ -190,7 +190,7 @@ def handle_all_messages(message):
         full_prompt = f"{system_prompt}\n\nUser Request:\n{text}"
         
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.8-flash',
             contents=full_prompt
         )
         
@@ -207,3 +207,4 @@ def handle_all_messages(message):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+        

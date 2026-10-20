@@ -12,7 +12,7 @@ GEMINI_API_KEY = "AQ.Ab8RN6L9XFH5DsfM0Yvs5Hx-baaavmjq2-2_ilwhJRc1q4-jQA"
 # Initialize Flask, GenAI Client & Bot
 app = Flask(__name__)
 client = genai.Client(api_key=GEMINI_API_KEY)
-bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN, threaded=False)
 
 # In-memory storage for user profiles and onboarding states
 user_states = {}
@@ -54,7 +54,7 @@ def get_community_markup():
 @app.route(f"/{TELEGRAM_BOT_TOKEN}", methods=["POST"])
 def webhook():
     if request.headers.get('content-type') == 'application/json':
-        json_data = request.get_json()
+        json_data = request.get_json(force=True)
         update = telebot.types.Update.de_json(json_data)
         bot.process_new_updates([update])
         return "OK", 200

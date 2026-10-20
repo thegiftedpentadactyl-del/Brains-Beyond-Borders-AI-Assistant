@@ -7,7 +7,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # --- SECURE CREDENTIALS ---
 TELEGRAM_BOT_TOKEN = "8845212664:AAHq9pMp4xA5rlrIH669kSf5_88frWe8o0U"
-GEMINI_API_KEY = "AQ.Ab8RN6L9XFH5DsfM0Yvs5Hx-baaavmjq2-2_ilwhJRc1q4-jQA"
+GEMINI_API_KEY = "AQ.Ab8RN6JuTrbU8B8lPbw8UrSWLV5YECz3N4utl4jFIGi3cK2e_g"
 
 # Initialize Flask, GenAI Client & Bot
 app = Flask(__name__)
@@ -31,7 +31,6 @@ STATE_CHALLENGE = 9
 STATE_STYLE = 10
 STATE_COMPLETED = 11
 
-# Comprehensive, Deep Inspirational Quotes
 INSPIRATIONAL_QUOTES = [
     "Education is the most powerful weapon which you can use to change the world. It is the great engine of personal development, bridging the gap between humble beginnings and extraordinary achievement. — Nelson Mandela",
     "It always seems impossible until it's done. Every grand scholarly pursuit starts with a single step into the unknown, driven by relentless curiosity and disciplined execution. — Nelson Mandela",
@@ -156,9 +155,8 @@ def handle_all_messages(message):
         bot.send_message(chat_id, completion_text, reply_markup=get_community_markup())
         return
 
-    # Normal Chat Mode (Post-Onboarding with Processing Heads-Up)
     try:
-        bot.send_message(chat_id, "Your message is under processing. Please allow 30 to 50 seconds for our secure cloud server to compile your comprehensive guidance...")
+        bot.send_message(chat_id, "Your message is under processing. Please allow 15 to 30 seconds for our secure cloud server to compile your comprehensive guidance...")
         bot.send_chat_action(chat_id, 'typing')
         
         profile = user_profiles.get(chat_id, {})
@@ -189,7 +187,7 @@ def handle_all_messages(message):
         full_prompt = f"{system_prompt}\n\nUser Request:\n{text}"
         
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-1.5-flash',
             contents=full_prompt
         )
         
@@ -200,8 +198,10 @@ def handle_all_messages(message):
         else:
             bot.send_message(chat_id, response_text)
     except Exception as e:
-        print(f"Detailed Error: {e}")
-        bot.send_message(chat_id, "System processing capacity limit reached. Please re-submit your request shortly.")
+        import traceback
+        traceback.print_exc()
+        bot.send_message(chat_id, f"Error details: {str(e)[:200]}")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+        

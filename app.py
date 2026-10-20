@@ -9,7 +9,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 TELEGRAM_BOT_TOKEN = "8845212664:AAHq9pMp4xA5rlrIH669kSf5_88frWe8o0U"
 GEMINI_API_KEY = "AQ.Ab8RN6Ln8amKuFVL8FNepn0simY9_Hpx6LCpibWKVdN6AhQRHA"
 
-# Set environment variable so the GenAI client recognizes the token format
+# Set environment variable for authentication
 os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
 
 # Initialize Flask, GenAI Client & Bot
@@ -190,7 +190,7 @@ def handle_all_messages(message):
         full_prompt = f"{system_prompt}\n\nUser Request:\n{text}"
         
         response = client.models.generate_content(
-            model='gemini-3.8-flash',
+            model='gemini-1.5-flash',
             contents=full_prompt
         )
         
@@ -207,4 +207,4 @@ def handle_all_messages(message):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-    
+        
